@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CANTO DJ MASTER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070709;--surface:#0f0f12;--panel:#151518;--border:#1e1e24;
+  --a:#00ffcc;--a-dim:rgba(0,255,204,0.12);
+  --b:#ff6ef7;--b-dim:rgba(255,110,247,0.12);
+  --accent:#e8ff47;--muted:#444;--text:#ddd;--dim:#1a1a1a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
+header{display:flex;align-items:center;gap:10px;padding:6px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--accent);}
+.logo-sub{font-size:8px;color:var(--muted);letter-spacing:2px;margin-left:4px;}
+.bus-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);margin-left:auto;flex-shrink:0;}
+.bus-dot.live{background:var(--a);box-shadow:0 0 6px var(--a);animation:pulse 2s infinite;}
+.bus-lbl{font-size:7px;letter-spacing:1px;color:var(--muted);}
+.bus-lbl.live{color:var(--a);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.body{display:flex;flex:1;overflow:hidden;}
+.deck{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.deck:last-child{border-right:none;}
+.deck-a{border-top:2px solid var(--a);}
+.deck-b{border-top:2px solid var(--b);}
+.deck-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.deck-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;}
+.deck-a .deck-name{color:var(--a);}
+.deck-b .deck-name{color:var(--b);}
+.conn-badge{font-size:6px;letter-spacing:1px;padding:2px 6px;border:1px solid var(--border);color:var(--muted);}
+.conn-badge.on{color:var(--a);border-color:var(--a);}
+.deck-b .conn-badge.on{color:var(--b);border-color:var(--b);}
+.eom{margin-left:auto;font-size:8px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;}
+.deck-a .eom{color:var(--a);}
+.deck-b .eom{color:var(--b);}
+.np-card{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.np-art{width:52px;height:52px;flex-shrink:0;background:var(--dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;position:relative;}
+.np-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.np-info{flex:1;min-width:0;}
+.np-title{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);line-height:1.4;}
+.np-title.playing{color:var(--a);}
+.deck-b .np-title.playing{color:var(--b);}
+.np-artist{font-size:8px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+.np-time{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px;margin-top:4px;}
+.deck-a .np-time{color:var(--a);}
+.deck-b .np-time{color:var(--b);}
+.np-dur{font-size:7px;color:var(--muted);margin-top:1px;}
+.prog{height:5px;background:var(--dim);cursor:pointer;flex-shrink:0;position:relative;}
+.prog-fill{height:100%;width:0%;transition:width .1s linear;pointer-events:none;}
+.deck-a .prog-fill{background:var(--a);}
+.deck-b .prog-fill{background:var(--b);}
+.transport{display:flex;gap:4px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.tb{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:5px 0;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;transition:all .12s;flex:1;text-align:center;}
+.tb.play-btn{font-size:15px;flex:1.6;}
+.tb.cue-btn{font-size:7px;letter-spacing:.5px;background:#0d0d00;border-color:#333300;color:#888800;}
+.deck-a .tb:hover,.deck-a .tb.on{background:var(--a-dim);border-color:var(--a);color:var(--a);}
+.deck-b .tb:hover,.deck-b .tb.on{background:var(--b-dim);border-color:var(--b);color:var(--b);}
+.vol-row{display:flex;align-items:center;gap:7px;padding:6px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.vol-lbl{font-size:7px;color:var(--muted);letter-spacing:1px;width:22px;flex-shrink:0;}
+.vol-val{font-size:9px;font-weight:700;width:28px;text-align:right;flex-shrink:0;}
+.deck-a .vol-val{color:var(--a);}
+.deck-b .vol-val{color:var(--b);}
+input[type=range]{-webkit-appearance:none;flex:1;height:3px;background:var(--dim);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;cursor:pointer;}
+.deck-a input[type=range]::-webkit-slider-thumb{background:var(--a);}
+.deck-b input[type=range]::-webkit-slider-thumb{background:var(--b);}
+.queue-hdr{padding:4px 12px;font-size:7px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.queue-total{margin-left:auto;font-size:7px;font-variant-numeric:tabular-nums;}
+.deck-a .queue-total{color:var(--a);}
+.deck-b .queue-total{color:var(--b);}
+.queue-list{flex:1;overflow-y:auto;}
+.qi{display:flex;align-items:center;gap:8px;padding:5px 12px;border-bottom:1px solid var(--border);transition:background .1s;}
+.qi:hover{background:var(--panel);}
+.qi-num{width:14px;text-align:right;font-size:7px;color:var(--muted);flex-shrink:0;}
+.qi-art{width:28px;height:28px;flex-shrink:0;background:var(--dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;overflow:hidden;position:relative;}
+.qi-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.qi-info{flex:1;min-width:0;}
+.qi-title{font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qi-artist{font-size:7px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;}
+.qi-dur{font-size:7px;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums;}
+.queue-empty{padding:14px;text-align:center;color:var(--muted);font-size:8px;line-height:1.8;}
+.center{width:155px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;background:var(--surface);border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.center-hdr{padding:7px 8px;border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);text-align:center;width:100%;}
+.xf-section{width:100%;padding:10px 12px;border-bottom:1px solid var(--border);}
+.xf-labels{display:flex;justify-content:space-between;font-size:8px;margin-bottom:5px;}
+.xf-a{color:var(--a);font-weight:700;}
+.xf-b{color:var(--b);font-weight:700;}
+#xfSlider{width:100%;-webkit-appearance:none;height:8px;background:linear-gradient(to right,var(--a),var(--dim) 50%,var(--b));outline:none;cursor:pointer;border-radius:4px;}
+#xfSlider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#fff;border-radius:50%;cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 4px rgba(0,0,0,.8);}
+.xf-val{text-align:center;font-size:8px;color:var(--muted);margin-top:5px;}
+.master-btns{width:100%;padding:8px 10px;display:flex;flex-direction:column;gap:5px;border-bottom:1px solid var(--border);}
+.mb{padding:7px 0;border:1px solid var(--border);background:var(--dim);color:var(--text);cursor:pointer;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.5px;text-align:center;width:100%;transition:all .12s;}
+.mb:hover{background:#282828;}
+.mb.sync{border-color:var(--accent);color:var(--accent);}
+.mb.sync:hover{background:rgba(232,255,71,.08);}
+.mb.stop{border-color:#ff3333;color:#ff3333;}
+.mb.stop:hover{background:rgba(255,51,51,.1);}
+.console-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;width:100%;}
+.con-hdr{padding:3px 8px;font-size:6px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);}
+.con{flex:1;overflow-y:auto;padding:3px 6px;font-size:7px;color:var(--muted);}
+.crx{color:#33cc77;}.ctx{color:#3399ff;}.cwarn{color:#ff9933;}
+.centry{line-height:1.8;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">CANTO<span class="logo-sub">DJ MASTER</span></div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+    <span class="bus-lbl" id="busLbl">STANDBY</span>
+    <span class="bus-dot" id="busDot"></span>
+  </div>
+</header>
+<div class="body">
+
+<!-- DECK A -->
+<div class="deck deck-a">
+  <div class="deck-hdr">
+    <div class="deck-name">DECK A</div>
+    <div class="conn-badge" id="connA">OFFLINE</div>
+    <div class="eom" id="eomA">EOM —</div>
+  </div>
+  <div class="np-card">
+    <div class="np-art" id="artA"><span>🎵</span></div>
+    <div class="np-info">
+      <div class="np-title" id="npTA">STANDBY</div>
+      <div class="np-artist" id="npAA">Open ?deck=A</div>
+      <div class="np-time" id="npCA">0:00</div>
+      <div class="np-dur" id="npDA">/ 0:00</div>
+    </div>
+  </div>
+  <div class="prog" id="pgA" onclick="seekDeck('A',event,this)"><div class="prog-fill" id="pfA"></div></div>
+  <div class="transport">
+    <button class="tb" onclick="send('A','PREV')">⏮</button>
+    <button class="tb play-btn" id="pbA" onclick="tPlay('A')">▶</button>
+    <button class="tb" onclick="send('A','NEXT')">⏭</button>
+    <button class="tb cue-btn" onclick="cueDeck('A')">CUE</button>
+  </div>
+  <div class="vol-row">
+    <span class="vol-lbl">VOL</span>
+    <input type="range" id="volA" min="0" max="100" value="80" oninput="sVol('A',this.value)">
+    <span class="vol-val" id="vvA">80%</span>
+  </div>
+  <div class="queue-hdr">NEXT QUEUE <span class="queue-total" id="qtA">—</span></div>
+  <div class="queue-list" id="qlA"><div class="queue-empty">waiting for deck…</div></div>
+</div>
+
+<!-- CENTER -->
+<div class="center">
+  <div class="center-hdr">X-FADER</div>
+  <div class="xf-section">
+    <div class="xf-labels"><span class="xf-a">A</span><span class="xf-b">B</span></div>
+    <input type="range" id="xfSlider" min="0" max="100" value="50" oninput="onXF(this.value)">
+    <div class="xf-val" id="xfV">CENTER</div>
+  </div>
+  <div class="master-btns">
+    <button class="mb sync" onclick="syncPlay()">▶▶ SYNC PLAY</button>
+    <button class="mb" onclick="sendAll('PAUSE')">⏸ PAUSE ALL</button>
+    <button class="mb stop" onclick="sendAll('STOP')">■ ALL STOP</button>
+  </div>
+  <div class="console-wrap">
+    <div class="con-hdr">LOG</div>
+    <div class="con" id="con"></div>
+  </div>
+</div>
+
+<!-- DECK B -->
+<div class="deck deck-b">
+  <div class="deck-hdr">
+    <div class="deck-name">DECK B</div>
+    <div class="conn-badge" id="connB">OFFLINE</div>
+    <div class="eom" id="eomB">EOM —</div>
+  </div>
+  <div class="np-card">
+    <div class="np-art" id="artB"><span>🎵</span></div>
+    <div class="np-info">
+      <div class="np-title" id="npTB">STANDBY</div>
+      <div class="np-artist" id="npAB">Open ?deck=B</div>
+      <div class="np-time" id="npCB">0:00</div>
+      <div class="np-dur" id="npDB">/ 0:00</div>
+    </div>
+  </div>
+  <div class="prog" id="pgB" onclick="seekDeck('B',event,this)"><div class="prog-fill" id="pfB"></div></div>
+  <div class="transport">
+    <button class="tb" onclick="send('B','PREV')">⏮</button>
+    <button class="tb play-btn" id="pbB" onclick="tPlay('B')">▶</button>
+    <button class="tb" onclick="send('B','NEXT')">⏭</button>
+    <button class="tb cue-btn" onclick="cueDeck('B')">CUE</button>
+  </div>
+  <div class="vol-row">
+    <span class="vol-lbl">VOL</span>
+    <input type="range" id="volB" min="0" max="100" value="80" oninput="sVol('B',this.value)">
+    <span class="vol-val" id="vvB">80%</span>
+  </div>
+  <div class="queue-hdr">NEXT QUEUE <span class="queue-total" id="qtB">—</span></div>
+  <div class="queue-list" id="qlB"><div class="queue-empty">waiting for deck…</div></div>
+</div>
+
+</div><!-- /.body -->
+<script>
+'use strict';
+const djBus=new BroadcastChannel('canto_dj_bus');
+const DS={
+  A:{playing:false,currentTime:0,duration:0,volume:.8,title:'',artist:'',pic:'',nextTracks:[],queueTotal:0,online:false},
+  B:{playing:false,currentTime:0,duration:0,volume:.8,title:'',artist:'',pic:'',nextTracks:[],queueTotal:0,online:false},
+};
+function fmtD(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');}
+function fmtH(s){if(!s||isNaN(s))return'0:00';if(s<3600)return fmtD(s);return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escA(s){return String(s).replace(/"/g,'&quot;');}
+
+function send(d,cmd,pay={}){djBus.postMessage({cmd,deck:d,payload:pay,ts:Date.now()});log('→ DECK '+d+': '+cmd,'ctx');}
+function sendAll(cmd,pay={}){djBus.postMessage({cmd,deck:'all',payload:pay,ts:Date.now()});log('→ ALL: '+cmd,'ctx');}
+function tPlay(d){DS[d].playing?send(d,'PAUSE'):send(d,'PLAY');}
+function sVol(d,v){const n=parseInt(v);document.getElementById('vv'+d).textContent=n+'%';send(d,'VOL',{value:n/100});}
+function seekDeck(d,e,bar){const st=DS[d];if(!st.duration)return;send(d,'SEEK',{time:Math.max(0,Math.min(1,e.offsetX/bar.offsetWidth))*st.duration});}
+function cueDeck(d){send(d,'CUE',{time:DS[d].currentTime||0});}
+function syncPlay(){djBus.postMessage({cmd:'PLAY',deck:'A',payload:{},ts:Date.now()});djBus.postMessage({cmd:'PLAY',deck:'B',payload:{},ts:Date.now()});log('→ SYNC PLAY A+B','ctx');}
+
+function onXF(v){
+  const n=parseInt(v);
+  const va=Math.min(1,2*(100-n)/100),vb=Math.min(1,2*n/100);
+  ['A','B'].forEach(d=>{
+    const vol=d==='A'?Math.round(va*100):Math.round(vb*100);
+    const sl=document.getElementById('vol'+d);if(sl)sl.value=vol;
+    document.getElementById('vv'+d).textContent=vol+'%';
+  });
+  djBus.postMessage({cmd:'CROSSFADE',deck:'A',payload:{value:1-va},ts:Date.now()});
+  djBus.postMessage({cmd:'CROSSFADE',deck:'B',payload:{value:1-vb},ts:Date.now()});
+  const lbl=document.getElementById('xfV');
+  if(lbl)lbl.textContent=n<5?'← A':n>95?'B →':n===50?'CENTER':n<50?'A +'+Math.round((50-n)/5):'B +'+Math.round((n-50)/5);
+}
+
+djBus.onmessage=(e)=>{
+  const{cmd,deck,payload}=e.data;
+  if(!deck||deck==='all')return;
+  const st=DS[deck];if(!st)return;
+  if(cmd==='STATUS'||cmd==='PONG'){
+    const was=st.online;
+    Object.assign(st,{
+      playing:payload.playing||false,currentTime:payload.currentTime||0,
+      duration:payload.duration||0,volume:payload.volume??st.volume,
+      title:payload.title||'',artist:payload.artist||'',pic:payload.pic||'',
+      nextTracks:payload.nextTracks||[],queueTotal:payload.queueTotal||0,online:true,
+    });
+    if(!was){log('← DECK '+deck+' online','crx');setBusLive();}
+    updDeck(deck);
+  }
+  if(cmd==='HANDSHAKE'){
+    st.online=true;updConn(deck);setBusLive();
+    log('← DECK '+deck+' HANDSHAKE','crx');
+    djBus.postMessage({cmd:'PING',deck,payload:{},ts:Date.now()});
+  }
+};
+
+function setBusLive(){
+  document.getElementById('busDot').classList.add('live');
+  const l=document.getElementById('busLbl');l.textContent='LIVE';l.classList.add('live');
+}
+function updConn(d){
+  const el=document.getElementById('conn'+d);
+  if(el){el.textContent=DS[d].online?'ONLINE':'OFFLINE';el.classList.toggle('on',DS[d].online);}
+}
+function updDeck(d){
+  const st=DS[d];
+  updConn(d);
+  // Artwork (NOW PLAYING)
+  const ae=document.getElementById('art'+d);
+  if(ae){
+    if(st.pic){
+      const ex=ae.querySelector('img');
+      if(!ex||ex.getAttribute('data-src')!==st.pic){
+        ae.innerHTML='';
+        const img=document.createElement('img');
+        img.setAttribute('data-src',st.pic);img.src=st.pic;img.alt='';
+        img.onerror=()=>{ae.innerHTML='<span>🎵</span>';};
+        ae.appendChild(img);
+      }
+    }else ae.innerHTML='<span>🎵</span>';
+  }
+  // Title / Artist
+  const te=document.getElementById('npT'+d);
+  if(te){
+    // title が空 = 曲未ロード → 「STANDBY」と表示（No Track点滅を防ぐ）
+    if(!st.online)      te.textContent='— Offline —';
+    else if(!st.title)  te.textContent='STANDBY';
+    else                te.textContent=st.title;
+    te.className='np-title'+(st.playing?' playing':'');
+    te.style.opacity=(!st.online||!st.title)?'0.35':'1';
+  }
+  const art=document.getElementById('npA'+d);
+  if(art){
+    art.textContent=st.artist||(st.online&&!st.title?'— queue a track in DECK '+d+' —':'');
+    art.style.opacity=(!st.artist)?'0.4':'1';
+  }
+  // Time
+  document.getElementById('npC'+d).textContent=fmtD(st.currentTime);
+  document.getElementById('npD'+d).textContent='/ '+fmtD(st.duration);
+  // Progress
+  const pf=document.getElementById('pf'+d);
+  if(pf)pf.style.width=st.duration?(st.currentTime/st.duration*100).toFixed(2)+'%':'0%';
+  // Play button
+  const pb=document.getElementById('pb'+d);
+  if(pb){pb.textContent=st.playing?'⏸':'▶';pb.classList.toggle('on',st.playing);}
+  // EOM
+  const remain=Math.max(0,(st.duration||0)-(st.currentTime||0));
+  const eom=document.getElementById('eom'+d);
+  if(eom){
+    eom.textContent=st.duration>0?'EOM -'+fmtD(remain):'EOM —';
+    eom.style.color=remain<30&&st.duration>0?'#ff4444':(d==='A'?'var(--a)':'var(--b)');
+  }
+  // Queue total
+  const qt=document.getElementById('qt'+d);
+  if(qt)qt.textContent=st.queueTotal>0?fmtH(st.queueTotal)+' total':'—';
+  // Queue list
+  const ql=document.getElementById('ql'+d);
+  if(!ql)return;
+  if(!st.nextTracks.length){ql.innerHTML='<div class="queue-empty">Queue empty</div>';return;}
+  ql.innerHTML=st.nextTracks.map((tr,i)=>`<div class="qi">
+    <span class="qi-num">${i+1}</span>
+    <div class="qi-art">${tr.pic?`<img src="${escA(tr.pic)}" alt="" onerror="this.parentNode.innerHTML='🎵'">`:'🎵'}</div>
+    <div class="qi-info">
+      <div class="qi-title">${esc(tr.title||'Unknown')}</div>
+      <div class="qi-artist">${esc(tr.artist||'')}</div>
+    </div>
+    <span class="qi-dur">${fmtD(tr.duration)}</span>
+  </div>`).join('');
+}
+
+function log(msg,cls=''){
+  const c=document.getElementById('con');
+  const d=new Date();
+  const ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  const div=document.createElement('div');div.className='centry '+(cls||'');
+  div.textContent='['+ts+'] '+msg;c.appendChild(div);
+  while(c.children.length>30)c.removeChild(c.firstChild);
+  c.scrollTop=c.scrollHeight;
+}
+
+setInterval(()=>['A','B'].forEach(d=>djBus.postMessage({cmd:'PING',deck:d,payload:{},ts:Date.now()})),1500);
+log('CANTO DJ MASTER ready','crx');
+log('Open mp3player_32_12.html?deck=A  and  ?deck=B','');
+</script>
+</body>
+</html>
