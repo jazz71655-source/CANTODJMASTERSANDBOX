@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CANTO DJ MASTER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050507;--surface:#101014;--panel:#17171d;--border:#31313a;
+  --a:#00ffd5;--a-dim:rgba(0,255,213,0.2);
+  --b:#ff5cff;--b-dim:rgba(255,92,255,0.2);
+  --accent:#f4ff38;--hot:#ff3d8d;--muted:#6f7080;--text:#f6f6ff;--dim:#171720;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:
+    radial-gradient(circle at 18% 0%,rgba(0,255,213,.16),transparent 30%),
+    radial-gradient(circle at 86% 8%,rgba(255,92,255,.18),transparent 34%),
+    linear-gradient(180deg,#09090d 0%,var(--bg) 42%,#020203 100%);
+  color:var(--text);font-family:'Space Mono',monospace;font-size:13px;
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;
+}
+header{display:flex;align-items:center;gap:10px;padding:7px 16px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(0,255,213,.09),var(--surface),rgba(255,92,255,.09));box-shadow:0 0 24px rgba(244,255,56,.08);flex-shrink:0;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:5px;color:var(--accent);text-shadow:0 0 10px rgba(244,255,56,.55),0 0 22px rgba(255,61,141,.35);}
+.logo-sub{font-size:11px;color:rgba(246,246,255,.7);letter-spacing:2px;margin-left:6px;}
+.bus-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);margin-left:auto;flex-shrink:0;}
+.bus-dot.live{background:var(--a);box-shadow:0 0 6px var(--a);animation:pulse 2s infinite;}
+.bus-lbl{font-size:7px;letter-spacing:1px;color:var(--muted);}
+.bus-lbl.live{color:var(--a);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.body{display:flex;flex:1;overflow:hidden;}
+.deck{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);position:relative;}
+.deck:last-child{border-right:none;}
+.deck-a{border-top:2px solid var(--a);}
+.deck-b{border-top:2px solid var(--b);}
+.deck-art-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(32px) saturate(1.8);opacity:0.10;transform:scale(1.15);pointer-events:none;transition:background-image .6s,opacity .6s;z-index:0;}
+.deck-art-bg.active{opacity:0.14;}
+.deck-hdr{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(255,255,255,.03),var(--surface));flex-shrink:0;position:relative;z-index:1;}
+.deck-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;}
+.deck-a .deck-name{color:var(--a);}
+.deck-b .deck-name{color:var(--b);}
+.conn-badge{font-size:6px;letter-spacing:1px;padding:2px 6px;border:1px solid var(--border);color:var(--muted);}
+.conn-badge.on{color:var(--a);border-color:var(--a);}
+.deck-b .conn-badge.on{color:var(--b);border-color:var(--b);}
+.eom{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--muted);font-variant-numeric:tabular-nums;transition:color .3s;}
+.deck-a .eom{color:var(--a);}
+.deck-b .eom{color:var(--b);}
+.eom.warn{color:#ff4444 !important;animation:eom-blink 1s infinite;}
+@keyframes eom-blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+.np-card{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.18);flex-shrink:0;position:relative;overflow:hidden;z-index:1;}
+.np-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(18px) saturate(1.6);opacity:0.20;transform:scale(1.1);pointer-events:none;transition:background-image .4s;}
+.np-art{width:78px;height:78px;flex-shrink:0;background:linear-gradient(135deg,rgba(0,255,213,.18),rgba(255,92,255,.18));border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden;position:relative;z-index:1;}
+.np-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.68;mix-blend-mode:screen;filter:saturate(1.45) contrast(1.15);}
+.np-info{flex:1;min-width:0;position:relative;z-index:1;}
+.np-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);line-height:1.3;}
+.np-title.playing{color:var(--a);}
+.deck-b .np-title.playing{color:var(--b);}
+.np-artist{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;}
+.np-time{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:2px;margin-top:2px;line-height:1;font-variant-numeric:tabular-nums;}
+.deck-a .np-time{color:var(--a);}
+.deck-b .np-time{color:var(--b);}
+.np-dur{font-size:11px;color:var(--muted);margin-top:2px;}
+.prog{height:5px;background:var(--dim);cursor:pointer;flex-shrink:0;position:relative;z-index:1;}
+.prog-fill{height:100%;width:0%;transition:width .1s linear;pointer-events:none;}
+.deck-a .prog-fill{background:var(--a);}
+.deck-b .prog-fill{background:var(--b);}
+.transport{display:flex;gap:4px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:1;}
+.tb{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:5px 0;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;transition:all .12s;flex:1;text-align:center;}
+.tb.play-btn{font-size:15px;flex:1.6;}
+.tb.cue-btn{font-size:7px;letter-spacing:.5px;background:#0d0d00;border-color:#333300;color:#888800;}
+.deck-a .tb:hover,.deck-a .tb.on{background:var(--a-dim);border-color:var(--a);color:var(--a);}
+.deck-b .tb:hover,.deck-b .tb.on{background:var(--b-dim);border-color:var(--b);color:var(--b);}
+.vol-row{display:flex;align-items:center;gap:7px;padding:6px 12px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:1;}
+.vol-lbl{font-size:7px;color:var(--muted);letter-spacing:1px;width:22px;flex-shrink:0;}
+.vol-val{font-size:9px;font-weight:700;width:28px;text-align:right;flex-shrink:0;}
+.deck-a .vol-val{color:var(--a);}
+.deck-b .vol-val{color:var(--b);}
+input[type=range]{-webkit-appearance:none;flex:1;height:3px;background:var(--dim);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;cursor:pointer;}
+.deck-a input[type=range]::-webkit-slider-thumb{background:var(--a);}
+.deck-b input[type=range]::-webkit-slider-thumb{background:var(--b);}
+.queue-hdr{padding:8px 14px;font-size:14px;color:var(--text);letter-spacing:2px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,rgba(0,255,213,.08),rgba(255,92,255,.08));flex-shrink:0;position:relative;z-index:1;}
+.queue-hint{font-size:7px;color:var(--muted);letter-spacing:0;}
+.queue-total{margin-left:auto;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+.deck-a .queue-total{color:var(--a);}
+.deck-b .queue-total{color:var(--b);}
+.queue-list{flex:1;overflow-y:auto;position:relative;z-index:1;}
+.qi{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(0,0,0,.25),rgba(0,0,0,.1));transition:background .1s;cursor:default;position:relative;}
+.qi:hover{background:rgba(255,255,255,.06);}
+.qi.is-next{background:rgba(244,255,56,.05);box-shadow:inset 3px 0 0 var(--accent);}
+.qi.drag-over{box-shadow:inset 0 -2px 0 var(--accent);background:rgba(244,255,56,.06);}
+.qi.dragging{opacity:0.35;}
+.qi-num{width:22px;text-align:right;flex-shrink:0;font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--muted);}
+.qi-drag{width:14px;flex-shrink:0;color:var(--muted);font-size:10px;cursor:grab;text-align:center;opacity:0;transition:opacity .15s;}
+.qi:hover .qi-drag{opacity:1;}
+.qi-art{width:46px;height:46px;flex-shrink:0;background:linear-gradient(135deg,rgba(244,255,56,.12),rgba(0,255,213,.14),rgba(255,92,255,.14));border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;position:relative;}
+.qi-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.42;mix-blend-mode:screen;}
+.qi-info{flex:1;min-width:0;}
+.qi-title-wrap{display:flex;align-items:center;gap:4px;overflow:hidden;cursor:pointer;}
+.qi-title{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qi-artist{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+.qi-dur{font-size:11px;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums;}
+.qi-del{width:18px;height:18px;flex-shrink:0;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s,color .12s;}
+.qi:hover .qi-del{opacity:1;}
+.qi-del:hover{color:#ff4444;}
+.qi-next-badge{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;padding:1px 5px;flex-shrink:0;background:rgba(244,255,56,.15);border:1px solid var(--accent);color:var(--accent);animation:nblink 1.5s infinite;}
+@keyframes nblink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.qi-edit-wrap{display:none;position:absolute;left:94px;right:42px;top:50%;transform:translateY(-50%);background:var(--panel);border:1px solid var(--accent);padding:3px 6px;z-index:10;}
+.qi-edit-wrap.show{display:flex;align-items:center;gap:4px;}
+.qi-edit-input{flex:1;background:none;border:none;outline:none;color:var(--accent);font-family:'Space Mono',monospace;font-size:12px;}
+.qi-edit-ok{background:none;border:none;color:var(--accent);cursor:pointer;font-size:10px;padding:0 2px;}
+.queue-empty{padding:20px;text-align:center;color:var(--muted);font-size:12px;line-height:2;letter-spacing:1px;}
+.center{width:155px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;background:var(--surface);border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.center-hdr{padding:7px 8px;border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);text-align:center;width:100%;}
+.xf-section{width:100%;padding:10px 12px;border-bottom:1px solid var(--border);}
+.xf-labels{display:flex;justify-content:space-between;font-size:8px;margin-bottom:5px;}
+.xf-a{color:var(--a);font-weight:700;}
+.xf-b{color:var(--b);font-weight:700;}
+#xfSlider{width:100%;-webkit-appearance:none;height:8px;background:linear-gradient(to right,var(--a),var(--dim) 50%,var(--b));outline:none;cursor:pointer;border-radius:4px;}
+#xfSlider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#fff;border-radius:50%;cursor:pointer;border:2px solid var(--bg);}
+.xf-val{text-align:center;font-size:8px;color:var(--muted);margin-top:5px;}
+.master-btns{width:100%;padding:8px 10px;display:flex;flex-direction:column;gap:5px;border-bottom:1px solid var(--border);}
+.mb{padding:7px 0;border:1px solid var(--border);background:var(--dim);color:var(--text);cursor:pointer;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.5px;text-align:center;width:100%;transition:all .12s;}
+.mb:hover{background:#282828;}
+.mb.sync{border-color:var(--accent);color:var(--accent);}
+.mb.stop{border-color:#ff3333;color:#ff3333;}
+.mb.stop:hover{background:rgba(255,51,51,.1);}
+.console-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;width:100%;}
+.con-hdr{padding:3px 8px;font-size:6px;color:var(--muted);letter-spacing:1px;border-bottom:1px solid var(--border);}
+.con{flex:1;overflow-y:auto;padding:3px 6px;font-size:7px;color:var(--muted);}
+.crx{color:#33cc77;}.ctx{color:#3399ff;}.cwarn{color:#ff9933;}
+.centry{line-height:1.8;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">CANTO<span class="logo-sub">DJ MASTER</span></div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+    <span class="bus-lbl" id="busLbl">STANDBY</span>
+    <span class="bus-dot" id="busDot"></span>
+  </div>
+</header>
+<div class="body">
+<div class="deck deck-a">
+  <div class="deck-art-bg" id="dkBgA"></div>
+  <div class="deck-hdr">
+    <div class="deck-name">DECK A</div>
+    <div class="conn-badge" id="connA">OFFLINE</div>
+    <div class="eom" id="eomA">EOM —</div>
+  </div>
+  <div class="np-card">
+    <div class="np-bg" id="bgA"></div>
+    <div class="np-art" id="artA"><span>♫</span></div>
+    <div class="np-info">
+      <div class="np-title" id="npTA">STANDBY</div>
+      <div class="np-artist" id="npAA">Open ?deck=A</div>
+      <div class="np-time" id="npCA">0:00</div>
+      <div class="np-dur" id="npDA">/ 0:00</div>
+    </div>
+  </div>
+  <div class="prog" id="pgA" onclick="seekDeck('A',event,this)"><div class="prog-fill" id="pfA"></div></div>
+  <div class="transport">
+    <button class="tb" onclick="send('A','PREV')">⏮</button>
+    <button class="tb play-btn" id="pbA" onclick="tPlay('A')">▶</button>
+    <button class="tb" onclick="send('A','NEXT')">⏭</button>
+    <button class="tb cue-btn" onclick="cueDeck('A')">CUE</button>
+  </div>
+  <div class="vol-row">
+    <span class="vol-lbl">VOL</span>
+    <input type="range" id="volA" min="0" max="100" value="80" oninput="sVol('A',this.value)">
+    <span class="vol-val" id="vvA">80%</span>
+  </div>
+  <div class="queue-hdr">NEXT QUEUE <span class="queue-hint">dbl=NEXT PLAY / ctrl+dbl=edit / drag=reorder</span><span class="queue-total" id="qtA">—</span></div>
+  <div class="queue-list" id="qlA"><div class="queue-empty">— waiting for deck —</div></div>
+</div>
+<div class="center">
+  <div class="center-hdr">X-FADER</div>
+  <div class="xf-section">
+    <div class="xf-labels"><span class="xf-a">A</span><span class="xf-b">B</span></div>
+    <input type="range" id="xfSlider" min="0" max="100" value="50" oninput="onXF(this.value)">
+    <div class="xf-val" id="xfV">CENTER</div>
+  </div>
+  <div class="master-btns">
+    <button class="mb sync" onclick="syncPlay()">⏭ SYNC PLAY</button>
+    <button class="mb" onclick="sendAll('PAUSE')">⏸ PAUSE ALL</button>
+    <button class="mb stop" onclick="sendAll('STOP')">■ ALL STOP</button>
+  </div>
+  <div class="console-wrap">
+    <div class="con-hdr">LOG</div>
+    <div class="con" id="con"></div>
+  </div>
+</div>
+<div class="deck deck-b">
+  <div class="deck-art-bg" id="dkBgB"></div>
+  <div class="deck-hdr">
+    <div class="deck-name">DECK B</div>
+    <div class="conn-badge" id="connB">OFFLINE</div>
+    <div class="eom" id="eomB">EOM —</div>
+  </div>
+  <div class="np-card">
+    <div class="np-bg" id="bgB"></div>
+    <div class="np-art" id="artB"><span>♫</span></div>
+    <div class="np-info">
+      <div class="np-title" id="npTB">STANDBY</div>
+      <div class="np-artist" id="npAB">Open ?deck=B</div>
+      <div class="np-time" id="npCB">0:00</div>
+      <div class="np-dur" id="npDB">/ 0:00</div>
+    </div>
+  </div>
+  <div class="prog" id="pgB" onclick="seekDeck('B',event,this)"><div class="prog-fill" id="pfB"></div></div>
+  <div class="transport">
+    <button class="tb" onclick="send('B','PREV')">⏮</button>
+    <button class="tb play-btn" id="pbB" onclick="tPlay('B')">▶</button>
+    <button class="tb" onclick="send('B','NEXT')">⏭</button>
+    <button class="tb cue-btn" onclick="cueDeck('B')">CUE</button>
+  </div>
+  <div class="vol-row">
+    <span class="vol-lbl">VOL</span>
+    <input type="range" id="volB" min="0" max="100" value="80" oninput="sVol('B',this.value)">
+    <span class="vol-val" id="vvB">80%</span>
+  </div>
+  <div class="queue-hdr">NEXT QUEUE <span class="queue-hint">dbl=NEXT PLAY / ctrl+dbl=edit / drag=reorder</span><span class="queue-total" id="qtB">—</span></div>
+  <div class="queue-list" id="qlB"><div class="queue-empty">— waiting for deck —</div></div>
+</div>
+</div>
+<script>
+'use strict';
+var djBus = new BroadcastChannel('canto_dj_bus');
+var DS = {
+  A:{playing:false,currentTime:0,duration:0,volume:.8,title:'',artist:'',pic:'',nextTracks:[],queueTotal:0,online:false,lastPong:0,nextPlayIdx:-1,curTrackId:''},
+  B:{playing:false,currentTime:0,duration:0,volume:.8,title:'',artist:'',pic:'',nextTracks:[],queueTotal:0,online:false,lastPong:0,nextPlayIdx:-1,curTrackId:''}
+};
+var _dragDeck=null, _dragIdx=null;
+
+function fmtD(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');}
+function fmtH(s){if(!s||isNaN(s))return'0:00';if(s<3600)return fmtD(s);return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escA(s){return String(s).replace(/"/g,'&quot;');}
+
+function send(d,cmd,pay){if(!pay)pay={};djBus.postMessage({cmd:cmd,deck:d,payload:pay,ts:Date.now()});log('> DECK '+d+': '+cmd,'ctx');}
+function sendAll(cmd,pay){if(!pay)pay={};djBus.postMessage({cmd:cmd,deck:'all',payload:pay,ts:Date.now()});log('> ALL: '+cmd,'ctx');}
+function tPlay(d){DS[d].playing?send(d,'PAUSE'):send(d,'PLAY');}
+function sVol(d,v){var n=parseInt(v);document.getElementById('vv'+d).textContent=n+'%';send(d,'VOL',{value:n/100});}
+function seekDeck(d,e,bar){var st=DS[d];if(!st.duration)return;send(d,'SEEK',{time:Math.max(0,Math.min(1,e.offsetX/bar.offsetWidth))*st.duration});}
+function cueDeck(d){send(d,'CUE',{time:DS[d].currentTime||0});}
+function syncPlay(){djBus.postMessage({cmd:'PLAY',deck:'A',payload:{},ts:Date.now()});djBus.postMessage({cmd:'PLAY',deck:'B',payload:{},ts:Date.now()});log('SYNC PLAY A+B','ctx');}
+
+function onXF(v){
+  var n=parseInt(v);
+  var va=Math.min(1,2*(100-n)/100),vb=Math.min(1,2*n/100);
+  ['A','B'].forEach(function(d){
+    var vol=d==='A'?Math.round(va*100):Math.round(vb*100);
+    var sl=document.getElementById('vol'+d);if(sl)sl.value=vol;
+    document.getElementById('vv'+d).textContent=vol+'%';
+  });
+  djBus.postMessage({cmd:'CROSSFADE',deck:'A',payload:{value:1-va},ts:Date.now()});
+  djBus.postMessage({cmd:'CROSSFADE',deck:'B',payload:{value:1-vb},ts:Date.now()});
+  var lbl=document.getElementById('xfV');
+  if(lbl)lbl.textContent=n<5?'< A':n>95?'B >':n===50?'CENTER':n<50?'A +'+Math.round((50-n)/5):'B +'+Math.round((n-50)/5);
+}
+
+function qRemove(d,idx){send(d,'Q_REMOVE',{index:idx});log('DECK '+d+' Q_REMOVE #'+idx,'cwarn');}
+function qMove(d,fi,ti){if(fi===ti)return;send(d,'Q_MOVE',{fromIndex:fi,toIndex:ti});log('DECK '+d+' Q_MOVE '+fi+'>'+ti,'ctx');}
+function setNextPlay(d,idx){
+  var prev=DS[d].nextPlayIdx;
+  if(prev===idx){DS[d].nextPlayIdx=-1;send(d,'Q_SET_NEXT',{index:-1});log('DECK '+d+' NEXT PLAY clear','ctx');}
+  else{DS[d].nextPlayIdx=idx;send(d,'Q_SET_NEXT',{index:idx});var t=DS[d].nextTracks[idx];log('DECK '+d+' NEXT PLAY #'+(idx+1)+' '+(t?t.title:''),'ctx');}
+  renderQueue(d);
+}
+function qRename(d,idx,val){var tr=DS[d].nextTracks[idx];if(!tr||!val)return;send(d,'META_UPDATE',{trackId:tr.id,title:val});log('DECK '+d+' META "'+val+'"','ctx');}
+
+djBus.onmessage=function(e){
+  var cmd=e.data.cmd, deck=e.data.deck, payload=e.data.payload;
+  if(!deck||deck==='all')return;
+  var st=DS[deck];if(!st)return;
+  if(cmd==='STATUS'||cmd==='PONG'){
+    var was=st.online, prevTrack=st.curTrackId;
+    st.lastPong=Date.now();
+    st.playing=payload.playing||false;
+    st.currentTime=payload.currentTime||0;
+    st.duration=payload.duration||0;
+    st.volume=payload.volume!=null?payload.volume:st.volume;
+    st.title=payload.title||'';
+    st.artist=payload.artist||'';
+    st.pic=payload.pic||'';
+    st.nextTracks=payload.nextTracks||[];
+    st.queueTotal=payload.queueTotal||0;
+    st.online=true;
+    st.curTrackId=payload.curTrackId||'';
+    if(st.curTrackId&&st.curTrackId!==prevTrack)st.nextPlayIdx=-1;
+    if(!was){log('DECK '+deck+' online','crx');setBusLive();}
+    updDeck(deck);
+  }
+  if(cmd==='HANDSHAKE'){
+    st.online=true;st.lastPong=Date.now();
+    updConn(deck);setBusLive();
+    log('DECK '+deck+' HANDSHAKE','crx');
+    djBus.postMessage({cmd:'PING',deck:deck,payload:{},ts:Date.now()});
+  }
+};
+
+function setBusLive(){
+  document.getElementById('busDot').classList.add('live');
+  var l=document.getElementById('busLbl');l.textContent='LIVE';l.classList.add('live');
+}
+function checkBusStatus(){
+  var now=Date.now(), TIMEOUT=30000, anyLive=false;
+  ['A','B'].forEach(function(d){
+    var st=DS[d];
+    if(st.online&&st.lastPong>0&&(now-st.lastPong)>TIMEOUT){st.online=false;log('DECK '+d+' timeout','cwarn');updConn(d);}
+    if(st.online)anyLive=true;
+  });
+  if(!anyLive){document.getElementById('busDot').classList.remove('live');var l=document.getElementById('busLbl');l.textContent='STANDBY';l.classList.remove('live');}
+}
+setInterval(function(){
+  ['A','B'].forEach(function(d){djBus.postMessage({cmd:'PING',deck:d,payload:{},ts:Date.now()});});
+  checkBusStatus();
+},2000);
+
+function updConn(d){var el=document.getElementById('conn'+d);if(el){el.textContent=DS[d].online?'ONLINE':'OFFLINE';el.classList.toggle('on',DS[d].online);}}
+
+function updDeck(d){
+  var st=DS[d];
+  updConn(d);
+  var dkBg=document.getElementById('dkBg'+d);
+  if(dkBg){if(st.pic){dkBg.style.backgroundImage='url("'+escA(st.pic)+'")';dkBg.classList.toggle('active',st.playing);}else{dkBg.style.backgroundImage='none';dkBg.classList.remove('active');}}
+  var bg=document.getElementById('bg'+d);
+  if(bg)bg.style.backgroundImage=st.pic?'url("'+escA(st.pic)+'")':'none';
+  var ae=document.getElementById('art'+d);
+  if(ae){
+    if(st.pic){var ex=ae.querySelector('img');if(!ex||ex.getAttribute('data-src')!==st.pic){ae.innerHTML='';var img=document.createElement('img');img.setAttribute('data-src',st.pic);img.src=st.pic;img.alt='';img.onerror=function(){ae.innerHTML='<span>♫</span>';};ae.appendChild(img);}}
+    else ae.innerHTML='<span>♫</span>';
+  }
+  var te=document.getElementById('npT'+d);
+  if(te){te.textContent=!st.online?'Offline':(!st.title?'STANDBY':st.title);te.className='np-title'+(st.playing?' playing':'');te.style.opacity=(!st.online||!st.title)?'0.35':'1';}
+  var ar=document.getElementById('npA'+d);
+  if(ar){ar.textContent=st.artist||(st.online&&!st.title?'queue a track in DECK '+d:'');ar.style.opacity=!st.artist?'0.4':'1';}
+  document.getElementById('npC'+d).textContent=fmtD(st.currentTime);
+  document.getElementById('npD'+d).textContent='/ '+fmtD(st.duration);
+  var pf=document.getElementById('pf'+d);
+  if(pf)pf.style.width=st.duration?(st.currentTime/st.duration*100).toFixed(2)+'%':'0%';
+  var pb=document.getElementById('pb'+d);
+  if(pb){pb.textContent=st.playing?'⏸':'▶';pb.classList.toggle('on',st.playing);}
+  var remain=Math.max(0,(st.duration||0)-(st.currentTime||0));
+  var eom=document.getElementById('eom'+d);
+  if(eom){eom.textContent=st.duration>0?'EOM -'+fmtD(remain):'EOM -';var warn=remain<30&&st.duration>0&&st.playing;eom.classList.toggle('warn',warn);if(!warn)eom.style.color='';}
+  var qt=document.getElementById('qt'+d);
+  if(qt)qt.textContent=st.queueTotal>0?fmtH(st.queueTotal)+' total':'-';
+  renderQueue(d);
+}
+
+function renderQueue(d){
+  var st=DS[d];
+  var ql=document.getElementById('ql'+d);
+  if(!ql)return;
+  if(!st.nextTracks||!st.nextTracks.length){
+    ql.innerHTML='<div class="queue-empty">'+(st.online?'- queue empty -':'- waiting for deck -')+'</div>';
+    return;
+  }
+  var npi=st.nextPlayIdx;
+  var html='';
+  for(var i=0;i<st.nextTracks.length;i++){
+    var tr=st.nextTracks[i];
+    var isNext=(npi===i);
+    var qiCls=isNext?'qi is-next':'qi';
+    var artHtml=tr.pic?('<img src="'+escA(tr.pic)+'" alt="" onerror="this.parentNode.textContent=\'note\'">') :'♫';
+    var badge=isNext?'<span class="qi-next-badge">NEXT PLAY</span>':'';
+    var dd="'"+d+"'";
+    html+='<div class="'+qiCls+'" draggable="true"'
+      +' ondragstart="onQDragStart(event,'+dd+','+i+')"'
+      +' ondragover="onQDragOver(event)"'
+      +' ondragleave="onQDragLeave(event)"'
+      +' ondrop="onQDrop(event,'+dd+','+i+')"'
+      +' ondragend="onQDragEnd(event)">'
+      +'<span class="qi-num">'+(i+1)+'</span>'
+      +'<span class="qi-drag">::::</span>'
+      +'<div class="qi-art">'+artHtml+'</div>'
+      +'<div class="qi-info">'
+        +'<div class="qi-title-wrap"'
+          +' ondblclick="if(event.ctrlKey){openQEditById('+dd+','+i+')}else{setNextPlay('+dd+','+i+')}">'
+          +'<span class="qi-title">'+esc(tr.title||'Unknown')+'</span>'
+          +badge
+        +'</div>'
+        +'<div class="qi-artist">'+esc(tr.artist||'')+'</div>'
+      +'</div>'
+      +'<span class="qi-dur">'+fmtD(tr.duration)+'</span>'
+      +'<button class="qi-del" onclick="qRemove('+dd+','+i+')">x</button>'
+      +'</div>';
+  }
+  ql.innerHTML=html;
+}
+
+function openQEditById(d,idx){
+  var ql=document.getElementById('ql'+d);if(!ql)return;
+  var rows=ql.querySelectorAll('.qi');
+  if(rows[idx]){var t=rows[idx].querySelector('.qi-title');if(t)openQEdit(t,d,idx);}
+}
+function openQEdit(titleEl,d,idx){
+  document.querySelectorAll('.qi-edit-wrap.show').forEach(function(w){w.remove();});
+  var qi=titleEl.closest('.qi');
+  var wrap=document.createElement('div');wrap.className='qi-edit-wrap show';
+  var inp=document.createElement('input');inp.className='qi-edit-input';inp.type='text';
+  var tr=DS[d].nextTracks[idx];inp.value=tr?tr.title:'';inp.maxLength=100;
+  var ok=document.createElement('button');ok.className='qi-edit-ok';ok.textContent='OK';
+  var commit=function(){
+    var v=inp.value.trim();
+    if(v&&tr&&v!==tr.title){qRename(d,idx,v);tr.title=v;titleEl.textContent=v;}
+    wrap.remove();
+  };
+  ok.onclick=commit;
+  inp.onkeydown=function(e){if(e.key==='Enter')commit();if(e.key==='Escape')wrap.remove();};
+  wrap.appendChild(inp);wrap.appendChild(ok);qi.appendChild(wrap);inp.focus();inp.select();
+}
+
+function onQDragStart(e,d,idx){_dragDeck=d;_dragIdx=idx;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function onQDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function onQDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function onQDrop(e,d,toIdx){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(_dragDeck===d&&_dragIdx!==null&&_dragIdx!==toIdx){
+    qMove(d,_dragIdx,toIdx);
+    var arr=DS[d].nextTracks;var moved=arr.splice(_dragIdx,1)[0];arr.splice(toIdx,0,moved);
+    renderQueue(d);
+  }
+  _dragDeck=null;_dragIdx=null;
+}
+function onQDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.qi.drag-over').forEach(function(el){el.classList.remove('drag-over');});
+  _dragDeck=null;_dragIdx=null;
+}
+
+function log(msg,cls){
+  var c=document.getElementById('con');
+  var d=new Date();
+  var ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  var div=document.createElement('div');div.className='centry '+(cls||'');
+  div.textContent='['+ts+'] '+msg;c.appendChild(div);
+  while(c.children.length>40)c.removeChild(c.firstChild);
+  c.scrollTop=c.scrollHeight;
+}
+
+log('CANTO DJ MASTER v4 ready','crx');
+log('Open canto_debug.html?deck=A and ?deck=B','');
+</script>
+</body>
+</html>
